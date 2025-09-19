@@ -423,116 +423,117 @@ fetchSensorData();
 setInterval(fetchSensorData, 12000);
 
 /* -------------------------
-   CROP RECOMMENDER
+   AI Crop Recommendations & Soil Amendments
    ------------------------- */
-const CROPS_DB = [
-  { name: "Wheat", moisture: [40, 60], ph: [6.0, 7.5], temp: [10, 25] },
-  { name: "Maize", moisture: [50, 70], ph: [5.5, 7.0], temp: [18, 35] },
-  { name: "Rice", moisture: [70, 90], ph: [5.0, 6.5], temp: [20, 35] },
-  { name: "Tomato", moisture: [60, 80], ph: [5.5, 7.5], temp: [18, 30] },
-  { name: "Soybean", moisture: [50, 70], ph: [6.0, 7.5], temp: [15, 30] },
-  { name: "Potato", moisture: [60, 80], ph: [4.8, 6.5], temp: [10, 25] }
-];
 
-let latestSensor = { moisture: 38, ph: 6.4, temperature: 22 };
+// Example AI rules for crops (simple, replace with ML model later)
+const cropRequirements = {
+  Wheat: { moisture: [35, 60], ph: [6, 7.5], n: 40, p: 30, k: 20 },
+  Rice: { moisture: [50, 80], ph: [5.5, 7], n: 50, p: 40, k: 30 },
+  Maize: { moisture: [30, 60], ph: [5.5, 7.5], n: 45, p: 35, k: 25 },
+  Tomato: { moisture: [40, 70], ph: [6, 7], n: 35, p: 30, k: 20 },
+  Potato: { moisture: [50, 75], ph: [5, 6.5], n: 50, p: 40, k: 30 }
+};
 
-function rangeScore(value, low, high) {
-  if (value >= low && value <= high) return 1.0;
-  const gap = Math.min(Math.abs(value - low), Math.abs(value - high));
-  const denom = Math.max(1, (high - low) || 1) * 1.5;
-  return Math.max(-1, 1 - gap / denom);
-}
+// 1️⃣ AI Recommender (based on sensor data)
+function aiCropRecommendations() {
+  const cropSuggestions = document.getElementById("cropSuggestions");
+  cropSuggestions.innerHTML = "";
 
-function scoreCropAgainstSoil(crop, soil) {
-  if (!soil || soil.moisture == null) return -999;
-  const mscore = rangeScore(soil.moisture, crop.moisture[0], crop.moisture[1]);
-  const phscore = rangeScore(soil.ph, crop.ph[0], crop.ph[1]);
-  const tscore = rangeScore(soil.temperature, crop.temp[0], crop.temp[1]);
-  return mscore * 0.45 + phscore * 0.35 + tscore * 0.2;
-}
+  // Sensor Data (from IoT / fallback)
+  const soil = {
+    moisture: window._LATEST_SOIL?.soilMoisture || 40,
+    ph: window._LATEST_SOIL?.ph || 6.5,
+    n: window._LATEST_SOIL?.n || 30,
+    p: window._LATEST_SOIL?.p || 25,
+    k: window._LATEST_SOIL?.k || 20,
+    temp: window._LATEST_SOIL?.soilTemp || 28
+  };
 
-function computeRecommendations() {
-  // ensure latestSensor is synced with window._LATEST_SOIL
-  const soil = window._LATEST_SOIL ? { moisture: window._LATEST_SOIL.moisture, ph: parseFloat(window._LATEST_SOIL.ph), temperature: window._LATEST_SOIL.temp } : latestSensor;
-  latestSensor = soil;
-  const scored = CROPS_DB.map(c => ({ ...c, score: scoreCropAgainstSoil(c, soil) }));
-  scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 5);
-  renderRecommendations(top);
-}
-
-function renderRecommendations(list) {
-  const container = document.getElementById('cropSuggestions');
-  if (!container) return;
-  container.innerHTML = '';
-  if (!list || list.length === 0) {
-    container.innerHTML = '<div class="text-gray-500">No recommendations yet — fetch sensors first.</div>';
-    return;
+  // Evaluate each crop
+  let suitableCrops = [];
+  for (let crop in cropRequirements) {
+    const req = cropRequirements[crop];
+    if (
+      soil.moisture >= req.moisture[0] &&
+      soil.moisture <= req.moisture[1] &&
+      soil.ph >= req.ph[0] &&
+      soil.ph <= req.ph[1]
+    ) {
+      suitableCrops.push(crop);
+    }
   }
-  for (const item of list) {
-    const div = document.createElement('div');
-    div.className = 'p-3 border rounded mb-2 flex justify-between items-center';
-    div.innerHTML = `
-      <div>
-        <strong>${item.name}</strong>
-        <div class="text-sm text-gray-500">pH: ${item.ph[0]}–${item.ph[1]}, Moisture: ${item.moisture[0]}–${item.moisture[1]}%</div>
-      </div>
-      <div class="text-right">
-        <div class="font-bold">${Math.max(0, (item.score * 100)).toFixed(0)}%</div>
-        <button class="px-2 py-1 bg-blue-600 text-white text-sm rounded mt-1" data-crop="${item.name}">Plan</button>
+
+  // Show results
+  if (suitableCrops.length > 0) {
+    cropSuggestions.innerHTML = `
+      <div class="p-4 bg-green-100 rounded-xl shadow-md">
+        <h4 class="font-bold text-green-800">🌱 Recommended Crops (AI)</h4>
+        <p class="mt-2">Based on your soil & sensor data, you can grow:</p>
+        <ul class="list-disc list-inside mt-2 text-green-700 font-medium">
+          ${suitableCrops.map(c => `<li>${c}</li>`).join("")}
+        </ul>
       </div>
     `;
-    container.appendChild(div);
+  } else {
+    cropSuggestions.innerHTML = `
+      <div class="p-4 bg-yellow-100 rounded-xl shadow-md">
+        <h4 class="font-bold text-yellow-800">⚠️ No perfect match found</h4>
+        <p class="mt-2">Your soil conditions don’t exactly match standard crops. Try improving soil first.</p>
+      </div>
+    `;
   }
-  container.querySelectorAll('button[data-crop]').forEach(btn => {
-    btn.addEventListener('click', () => generateSoilFixes(btn.dataset.crop));
-  });
 }
 
-/* -------------------------
-   SOIL FIXES / AMENDMENTS
-   ------------------------- */
-function generateSoilFixes(chosenCropName) {
-  const crop = CROPS_DB.find(c => c.name.toLowerCase() === chosenCropName.toLowerCase());
-  const container = document.getElementById('amendmentSuggestions');
-  if (!container) return;
-  if (!crop) { container.innerText = 'Unknown crop'; return; }
-  const soil = window._LATEST_SOIL || latestSensor;
-  if (!soil || (soil.moisture == null && soil.ph == null)) { container.innerText = 'No soil data available'; return; }
+// 2️⃣ Soil Amendments (user inputs their own crop)
+function suggestSoilAmendments() {
+  const userCrop = document.getElementById("cropInput").value.trim();
+  const amendmentSuggestions = document.getElementById("amendmentSuggestions");
+  amendmentSuggestions.innerHTML = "";
 
-  const fixes = [];
-  if (soil.ph < crop.ph[0]) fixes.push(`Increase pH: add lime gradually, mix well, and re-test in 2–4 weeks.`);
-  else if (soil.ph > crop.ph[1]) fixes.push(`Decrease pH: apply sulfur or acidifying fertilizers, re-test after several weeks.`);
-  else fixes.push('✅ pH is in preferred range.');
-
-  if (soil.moisture < crop.moisture[0]) fixes.push(`Irrigation needed: drip/micro-sprinklers, compost mulch for water retention.`);
-  else if (soil.moisture > crop.moisture[1]) fixes.push(`Too wet: improve drainage (raised beds, ridges), reduce irrigation.`);
-  else fixes.push('✅ Moisture is good.');
-
-  if (soil.temperature < crop.temp[0]) fixes.push(`Soil temp low: use black plastic mulch, low tunnels, or wait for warmer season.`);
-  else if (soil.temperature > crop.temp[1]) fixes.push(`Soil temp high: use shade nets, mulch, or irrigate evenings for cooling.`);
-  else fixes.push('✅ Temperature is optimal.');
-
-  fixes.push('🌱 Improve organic matter with compost/manure to boost soil health.');
-  fixes.push('🧪 Do an NPK test and apply fertilizers accordingly.');
-
-  container.innerHTML = `<h4 class="font-semibold mb-2">How to adjust soil for ${chosenCropName}</h4>`
-    + fixes.map(f => `<p class="text-sm mb-1">• ${f}</p>`).join('');
-}
-
-/* wire simple UI crop buttons */
-const recommendBtn = document.getElementById('recommendBtn');
-const suggestBtn = document.getElementById('suggestBtn');
-if (recommendBtn) recommendBtn.addEventListener('click', computeRecommendations);
-if (suggestBtn) suggestBtn.addEventListener('click', () => {
-  const crop = document.getElementById('cropInput') ? document.getElementById('cropInput').value.trim() : '';
-  if (!crop) {
-    const container = document.getElementById('amendmentSuggestions');
-    if (container) container.innerHTML = '<p class="text-red-600">Please enter a crop name.</p>';
+  if (!userCrop || !cropRequirements[userCrop]) {
+    amendmentSuggestions.innerHTML = `<p class="text-red-600">⚠️ Please enter a valid crop name (e.g., Wheat, Rice, Maize).</p>`;
     return;
   }
-  generateSoilFixes(crop);
-});
+
+  // Sensor Data (from IoT / fallback)
+  const soil = {
+    moisture: window._LATEST_SOIL?.soilMoisture || 40,
+    ph: window._LATEST_SOIL?.ph || 6.5,
+    n: window._LATEST_SOIL?.n || 30,
+    p: window._LATEST_SOIL?.p || 25,
+    k: window._LATEST_SOIL?.k || 20,
+  };
+
+  const req = cropRequirements[userCrop];
+  let fixes = [];
+
+  // Compare soil vs requirements
+  if (soil.moisture < req.moisture[0]) fixes.push("💧 Increase irrigation to raise soil moisture.");
+  if (soil.moisture > req.moisture[1]) fixes.push("💧 Drain excess water to reduce soil moisture.");
+  if (soil.ph < req.ph[0]) fixes.push("⚗️ Soil is too acidic. Add lime to increase pH.");
+  if (soil.ph > req.ph[1]) fixes.push("⚗️ Soil is too alkaline. Add organic matter to lower pH.");
+  if (soil.n < req.n) fixes.push("🧪 Add Nitrogen fertilizer (e.g., Urea).");
+  if (soil.p < req.p) fixes.push("🧪 Add Phosphorus fertilizer (e.g., DAP).");
+  if (soil.k < req.k) fixes.push("🧪 Add Potassium fertilizer (e.g., MOP).");
+
+  amendmentSuggestions.innerHTML = `
+    <div class="p-4 bg-blue-100 rounded-xl shadow-md">
+      <h4 class="font-bold text-blue-800">🛠️ Soil Fix Suggestions for "${userCrop}"</h4>
+      <ul class="list-disc list-inside mt-2 text-blue-700 font-medium">
+        ${fixes.length > 0 ? fixes.map(f => `<li>${f}</li>`).join("") : "<li>✅ Your soil is already suitable!</li>"}
+      </ul>
+    </div>
+  `;
+}
+
+// Attach buttons
+const recommendBtn = document.getElementById("recommendBtn");
+if (recommendBtn) recommendBtn.addEventListener("click", aiCropRecommendations);
+
+const suggestBtn = document.getElementById("suggestBtn");
+if (suggestBtn) suggestBtn.addEventListener("click", suggestSoilAmendments);
+
 
 /* -------------------------
    YIELD CHART (Chart.js)
