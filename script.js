@@ -209,18 +209,24 @@ const weatherDisplay = document.getElementById('weatherDisplay');
 const weatherDetail = document.getElementById('weatherDetail');
 const weatherIcon = document.getElementById('weatherIcon');
 
+// Replace with your OpenWeatherMap API key to enable live fetches
 const OPENWEATHER_API_KEY = 'd88e93af3e36ea377bf84d64f92ec221';
 
+// show modal only if geolocation available
 if (locationModal) {
   if (!navigator.geolocation) {
+    // hide modal and show fallback text
     locationModal.style.display = 'none';
     if (weatherDisplay) weatherDisplay.innerHTML = 'N/A';
     if (weatherDetail) weatherDetail.textContent = translations['en'].weather_detail;
   } else {
+    // show modal on load
+    // prefer CSS flex display — but only show if not already hidden by server-side
     locationModal.style.display = 'flex';
   }
 }
 
+// helper: update weather UI
 function setWeatherUI({ temp, condition, description, city, country }) {
   if (weatherDisplay) weatherDisplay.innerHTML = `${Math.round(temp)}°C <span class="text-lg font-medium">${condition}</span>`;
   if (weatherDetail) weatherDetail.textContent = `Currently: ${description}.`;
@@ -239,14 +245,14 @@ function setWeatherUI({ temp, condition, description, city, country }) {
 }
 
 function fetchWeatherForCoords(lat, lon) {
-  if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY === 'd88e93af3e36ea377bf84d64f92ec221') {
+  if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY === 'REPLACE_WITH_YOUR_OPENWEATHER_API_KEY') {
     if (weatherDisplay) weatherDisplay.innerHTML = '—';
     if (weatherDetail) weatherDetail.textContent = 'Replace OPENWEATHER_API_KEY in the script to fetch live weather.';
     return;
   }
   const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHER_API_KEY}&units=metric`;
   fetch(apiUrl)
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw new Error('Weather fetch failed'); return r.json(); })
     .then(data => {
       const temp = data.main.temp;
       const condition = data.weather[0].main;
@@ -262,6 +268,7 @@ function fetchWeatherForCoords(lat, lon) {
     });
 }
 
+/* allow / deny buttons */
 if (allowBtn) {
   allowBtn.addEventListener('click', () => {
     if (locationModal) locationModal.style.display = 'none';
@@ -272,12 +279,29 @@ if (allowBtn) {
     if (weatherDisplay) weatherDisplay.innerHTML = 'Loading...';
     if (weatherDetail) weatherDetail.textContent = 'Fetching location...';
     navigator.geolocation.getCurrentPosition(pos => {
-      fetchWeatherForCoords(pos.coords.latitude, pos.coords.longitude);
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      const locSpan = locationDisplay ? locationDisplay.querySelector('span') : null;
+      if (locSpan) locSpan.textContent = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+      if (OPENWEATHER_API_KEY && OPENWEATHER_API_KEY !== 'REPLACE_WITH_YOUR_OPENWEATHER_API_KEY') {
+        fetchWeatherForCoords(lat, lon);
+      } else {
+        // no API key, show guidance
+        if (weatherDisplay) weatherDisplay.innerHTML = '—';
+        if (weatherDetail) weatherDetail.textContent = 'Replace OPENWEATHER_API_KEY in the script to fetch live weather.';
+      }
     }, err => {
       console.error('Geolocation error', err);
       if (locationModal) locationModal.style.display = 'none';
       if (weatherDisplay) weatherDisplay.innerHTML = 'N/A';
-      if (weatherDetail) weatherDetail.textContent = 'Location error.';
+      if (weatherDetail) {
+        switch (err.code) {
+          case err.PERMISSION_DENIED: weatherDetail.textContent = 'Location access was denied.'; break;
+          case err.POSITION_UNAVAILABLE: weatherDetail.textContent = 'Location information is unavailable.'; break;
+          case err.TIMEOUT: weatherDetail.textContent = 'The request to get user location timed out.'; break;
+          default: weatherDetail.textContent = 'An unknown error occurred while getting location.'; break;
+        }
+      }
     }, { timeout: 10000 });
   });
 }
