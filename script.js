@@ -371,7 +371,7 @@ function updateSensorUI(data) {
   // 🌱 Animate numeric updates
   animateNumber(document.getElementById("soilMoistureValue"), m, "%");
   animateNumber(document.getElementById("airHumidityValue"), ah, "%");
-  animateNumber(document.getElementById("airTempValue"), at, "°C");
+  animateNumber(document.getElementById("soilTempValue"), soilTemp, "°C");
   animateNumber(document.getElementById("waterLevelValue"), wl, "%");
 
   // Still update static values instantly
@@ -694,3 +694,13 @@ if (logoutLink) {
 }
 
 window.addEventListener("DOMContentLoaded", updateUserMenu);
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("*").forEach(el => {
+    if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
+      if (el.textContent.trim() === "Air Temperature") {
+        el.textContent = "Soil Temperature";
+      }
+    }
+  });
+});
