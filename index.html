@@ -255,14 +255,20 @@
     </div>
 
     <!-- Crop input + recommendations -->
-    <div class="w-full mb-8">
-      <div class="card p-6 bg-white rounded-2xl shadow-md w-full">
-        <h3 class="text-2xl font-bold mb-2 text-green-700" data-lang-key="crop_input_title">
+    <div class="card p-6 bg-white rounded-2xl shadow-md w-full">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-2xl font-bold text-green-700" data-lang-key="crop_input_title">
           🌾 Crop Planner & Recommendations
         </h3>
-        <p class="text-sm text-gray-600 mb-4" data-lang-key="crop_input_desc">
-          Enter the crop you want to grow. We’ll check your soil condition and recommend the best crops or guide you with amendments.
-        </p>
+        <button id="resetBtn" 
+          class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900 transition">
+          🔄 Reset
+        </button>
+      </div>
+
+      <p class="text-sm text-gray-600 mb-4" data-lang-key="crop_input_desc">
+        Enter the crop you want to grow. We’ll check your soil condition and recommend the best crops or guide you with amendments.
+      </p>
 
         <label for="cropInput" class="block text-gray-700 font-medium mb-2">Enter your crop name:</label>
         <input 

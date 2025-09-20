@@ -534,6 +534,23 @@ if (recommendBtn) recommendBtn.addEventListener("click", aiCropRecommendations);
 const suggestBtn = document.getElementById("suggestBtn");
 if (suggestBtn) suggestBtn.addEventListener("click", suggestSoilAmendments);
 
+/* -------------------------
+   RESET BUTTON
+   ------------------------- */
+const resetBtn = document.getElementById("resetBtn");
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    const cropInput = document.getElementById("cropInput");
+    const cropSuggestions = document.getElementById("cropSuggestions");
+    const amendmentSuggestions = document.getElementById("amendmentSuggestions");
+
+    if (cropInput) cropInput.value = "";
+    if (cropSuggestions) cropSuggestions.innerHTML = "";
+    if (amendmentSuggestions) amendmentSuggestions.innerHTML = "";
+  });
+}
+
+
 
 /* -------------------------
    YIELD CHART (Chart.js)
