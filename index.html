@@ -290,10 +290,19 @@
       </div>
     </div>
 
-    <!-- Yield History Chart -->
-    <div class="card p-5 lg:col-span-2">
-      <h3 class="text-xl font-semibold mb-4" data-lang-key="yield_history">Yield History (Wheat)</h3>
-      <div style="height:260px;"><canvas id="yieldChart"></canvas></div>
+    <!-- Yield & Market History Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <!-- Yield History Chart -->
+      <div class="card p-5">
+        <h3 class="text-xl font-semibold mb-4" data-lang-key="yield_history">Yield History (Wheat)</h3>
+        <div style="height:260px;"><canvas id="yieldChart"></canvas></div>
+      </div>
+
+      <!-- Market History Chart -->
+      <div class="card p-5">
+        <h3 class="text-xl font-semibold mb-4">Market Price History (₹/Quintal)</h3>
+        <div style="height:260px;"><canvas id="marketChart"></canvas></div>
+      </div>
     </div>
   </main>
 

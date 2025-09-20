@@ -585,6 +585,68 @@ function initYieldChart() {
 }
 
 /* -------------------------
+   MARKET PRICE DATA & CHART
+   ------------------------- */
+
+// Mock market price data (₹ per Quintal) for last 5 years + prediction
+const marketPriceData = {
+  Wheat: [1850, 1920, 2000, 2100, 2050, 2200],
+  Rice:  [1500, 1600, 1700, 1750, 1800, 1900],
+  Maize: [1200, 1250, 1300, 1350, 1400, 1500],
+  Tomato:[2200, 2500, 2400, 2600, 2700, 2800],
+  Potato:[1000, 1100, 1050, 1150, 1200, 1250]
+};
+
+let marketChartInstance = null;
+
+// Initialize Market Price Chart
+function initMarketChart(cropName = "Wheat") {
+  const canvas = document.getElementById('marketChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Select crop price data (fallback = Wheat)
+  const prices = marketPriceData[cropName] || marketPriceData["Wheat"];
+
+  // Destroy old chart if exists
+  if (marketChartInstance) marketChartInstance.destroy();
+
+  // Create new chart
+  marketChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['2020', '2021', '2022', '2023', '2024', '2025 (Pred.)'],
+      datasets: [{
+        label: `${cropName} Price (₹/Quintal)`,
+        data: prices,
+        borderColor: 'rgba(59,130,246,1)',
+        backgroundColor: 'rgba(59,130,246,0.2)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: 'rgba(59,130,246,1)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: false,
+          title: { display: true, text: '₹ per Quintal' }
+        }
+      }
+    }
+  });
+}
+
+// Detect current crop and refresh chart
+function updateChartsForActiveCrop() {
+  const cropName = document.getElementById("currentCrop")?.textContent?.trim() || "Wheat";
+  initMarketChart(cropName);
+}
+
+/* -------------------------
    VISUAL SCAN STUB
    ------------------------- */
 const startScanBtn = document.getElementById('startScanBtn');
@@ -648,6 +710,7 @@ window.addEventListener("DOMContentLoaded", () => {
 window.addEventListener('load', () => {
   // init UI pieces
   try { initYieldChart(); } catch (e) { console.warn('Yield chart failed to initialize', e); }
+  try { initMarketChart(); } catch (e) { console.warn('Market chart failed', e); }
   // populate initial sensor UI if mock exists
   if (window._LATEST_SOIL) {
     updateSensorUI(window._LATEST_SOIL);
