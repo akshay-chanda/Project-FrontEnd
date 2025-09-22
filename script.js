@@ -921,4 +921,29 @@ window.addEventListener('load', () => {
   }
 });
 
+// 🌱 Sync Crop Planner input with Current Crop section
+const cropInputEl = document.getElementById("cropInput");
+if (cropInputEl) {
+  cropInputEl.addEventListener("input", () => {
+    const val = cropInputEl.value.trim();
+    const currentCropEl = document.getElementById("currentCrop");
+
+    if (currentCropEl) {
+      currentCropEl.textContent = val || "None";
+    }
+
+    // Save selection so it persists after reload
+    if (val) {
+      localStorage.setItem("selectedCrop", val);
+    } else {
+      localStorage.removeItem("selectedCrop");
+    }
+
+    // Update charts if crop name is valid
+    if (typeof updateChartsForActiveCrop === "function") {
+      updateChartsForActiveCrop();
+    }
+  });
+}
+
 
