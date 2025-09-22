@@ -946,4 +946,22 @@ if (cropInputEl) {
   });
 }
 
+// 🔘 Scroll to Crop Planner Section (with offset for sticky header)
+const goToPlannerBtn = document.getElementById("goToPlannerBtn");
+if (goToPlannerBtn) {
+  goToPlannerBtn.addEventListener("click", () => {
+    const plannerSection = document.getElementById("cropPlannerSection");
+    if (plannerSection) {
+      const headerOffset = 80; // adjust this to match your header height
+      const elementPosition = plannerSection.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  });
+}
+
 

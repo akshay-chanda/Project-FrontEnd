@@ -59,6 +59,13 @@
 
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- 🔘 Go to Crop Planner Button -->
+    <div class="mb-4">
+      <button id="goToPlannerBtn" 
+        class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700">
+        🌱 Go to Crop Planner
+      </button>
+    </div>
 
     <!-- Key Metrics Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -76,7 +83,7 @@
           <i class="fas fa-seedling text-green-500 text-2xl"></i>
         </div>
         <p id="currentCrop" class="text-3xl font-bold text-gray-900 mt-2">Wheat</p>
-        <p class="text-sm text-gray-500" data-lang-key="sown_on">Sown on: 15 Nov 2024</p>
+        <p class="text-sm text-gray-500" data-lang-key="sown_on">Sown on: 20 Sep 2025</p>
       </div>
 
       <div class="card p-5">
@@ -212,40 +219,42 @@
     </div>
 
     <!-- Crop input + recommendations -->
-    <div class="card p-6 bg-white rounded-2xl shadow-md w-full">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-2xl font-bold text-green-700" data-lang-key="crop_input_title">
-          🌾 Crop Planner & Recommendations
-        </h3>
-        <button id="resetBtn" 
-          class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900 transition">
-          🔄 Reset
-        </button>
-      </div>
+    <section id="cropPlannerSection">
+      <div class="card p-6 bg-white rounded-2xl shadow-md w-full">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-2xl font-bold text-green-700" data-lang-key="crop_input_title">
+            🌾 Crop Planner & Recommendations
+          </h3>
+          <button id="resetBtn" 
+            class="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900 transition">
+            🔄 Reset
+          </button>
+        </div>
 
-      <p class="text-sm text-gray-600 mb-4" data-lang-key="crop_input_desc">
-        Enter the crop you want to grow. We’ll check your soil condition and recommend the best crops or guide you with amendments.
-      </p>
+        <p class="text-sm text-gray-600 mb-4" data-lang-key="crop_input_desc">
+          Enter the crop you want to grow. We’ll check your soil condition and recommend the best crops or guide you with amendments.
+        </p>
 
         <label for="cropInput" class="block text-gray-700 font-medium mb-2">Enter your crop name:</label>
-        <input 
-          id="cropInput" 
-          class="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:ring-2 focus:ring-green-500 focus:outline-none" 
-          placeholder="e.g. Wheat, Maize, Tomato" 
-        />
-        <p class="text-xs text-gray-500 mt-1">Tip: Use common names like 'Rice', 'Potato', etc.</p>
+          <input 
+            id="cropInput" 
+            class="w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-800 focus:ring-2 focus:ring-green-500 focus:outline-none" 
+            placeholder="e.g. Wheat, Maize, Tomato" 
+          />
+          <p class="text-xs text-gray-500 mt-1">Tip: Use common names like 'Rice', 'Potato', etc.</p>
 
-        <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full">
-          <button id="recommendBtn" class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">🌱 Get Recommendations</button>
-          <button id="suggestBtn" class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">🛠️ Suggest Soil Amendments</button>
-        </div>
+          <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full">
+            <button id="recommendBtn" class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">🌱 Get Recommendations</button>
+            <button id="suggestBtn" class="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">🛠️ Suggest Soil Amendments</button>
+          </div>
 
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div id="cropSuggestions" class="space-y-2"></div>
-          <div id="amendmentSuggestions" class="space-y-2"></div>
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="cropSuggestions" class="space-y-2"></div>
+            <div id="amendmentSuggestions" class="space-y-2"></div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Yield & Market History Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
