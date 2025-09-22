@@ -819,60 +819,106 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// SCRIPT FOR CROP PREFERENCES DROPDOWN
-    const cropListBtn = document.getElementById('cropListBtn');
-    const cropDropdown = document.getElementById('cropDropdown');
-    const selectedCropText = document.getElementById('selectedCropText');
+/* -------------------------
+   CROP PREFERENCES — fresh form on reload
+   ------------------------- */
+const cropListBtn = document.getElementById('cropListBtn');
+const cropDropdown = document.getElementById('cropDropdown');
+const selectedCropText = document.getElementById('selectedCropText');
+const startFarmingBtn = document.getElementById('startFarmingBtn');
 
-    cropListBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      cropDropdown.classList.toggle('open');
-    });
+let selectedCrop = null; // always start blank on reload
 
-    cropDropdown.addEventListener('click', function(event) {
-      event.preventDefault();
-      const selectedLink = event.target.closest('a');
-      if (selectedLink) {
-        const cropName = selectedLink.querySelector('span').textContent;
-        selectedCropText.textContent = `Selected: ${cropName}`;
-        cropDropdown.classList.remove('open');
-      }
-    });
+// Reset UI state on reload
+if (selectedCropText) selectedCropText.textContent = "Select Crop";
+if (startFarmingBtn) {
+  startFarmingBtn.disabled = true;
+  startFarmingBtn.classList.remove('bg-green-600','hover:bg-green-700');
+  startFarmingBtn.classList.add('bg-green-400');
+}
 
-    window.addEventListener('click', function() {
-      if (cropDropdown.classList.contains('open')) {
-        cropDropdown.classList.remove('open');
-      }
-    });
+// Toggle dropdown open/close
+if (cropListBtn) {
+  cropListBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (cropDropdown) cropDropdown.classList.toggle('open');
+  });
+}
 
-    // 🌱 Start Farming Button Control
-    const startFarmingBtn = document.getElementById("startFarmingBtn");
-    let selectedCrop = null;
+// Handle crop selection
+if (cropDropdown) {
+  cropDropdown.addEventListener('click', function (event) {
+    event.preventDefault();
+    const chosenAnchor = event.target.closest('a') || event.target.closest('[role="menuitem"]');
+    if (!chosenAnchor) return;
+    const span = chosenAnchor.querySelector('span');
+    const cropName = (span ? span.textContent : chosenAnchor.textContent).trim();
+    if (!cropName) return;
 
-    cropDropdown.addEventListener("click", function (event) {
-      event.preventDefault();
-      const selectedLink = event.target.closest("a");
-      if (selectedLink) {
-        selectedCrop = selectedLink.querySelector("span").textContent;
-        selectedCropText.textContent = `Selected: ${selectedCrop}`;
-        cropDropdown.classList.remove("open");
+    selectedCrop = cropName;
 
-        // Enable Start Farming
-        startFarmingBtn.disabled = false;
-        startFarmingBtn.classList.remove("bg-green-400");
-        startFarmingBtn.classList.add("bg-green-600", "hover:bg-green-700");
-      }
-    });
+    // Update button text
+    if (selectedCropText) selectedCropText.textContent = `Selected: ${cropName}`;
 
+    // Save to localStorage (for farming.html use only)
+    localStorage.setItem('selectedCrop', cropName);
+
+    // Close dropdown
+    cropDropdown.classList.remove('open');
+
+    // Enable Start Farming button
     if (startFarmingBtn) {
-      startFarmingBtn.addEventListener("click", (e) => {
-        if (!selectedCrop) {
-          e.preventDefault();
-          alert("⚠️ Please select a crop before starting farming!");
-        } else {
-          // Go to farming page
-          window.location.href = "farming.html?crop=" + encodeURIComponent(selectedCrop);
-        }
-      });
+      startFarmingBtn.disabled = false;
+      startFarmingBtn.classList.remove('bg-green-400');
+      startFarmingBtn.classList.add('bg-green-600','hover:bg-green-700');
     }
+  });
+}
+
+// Start Farming button
+if (startFarmingBtn) {
+  startFarmingBtn.addEventListener('click', (e) => {
+    if (!selectedCrop) {
+      e.preventDefault();
+      alert("⚠️ Please select a crop before starting farming!");
+      return;
+    }
+    window.location.href = "farming.html?crop=" + encodeURIComponent(selectedCrop);
+  });
+}
+
+
+/* -------------------------
+   FARMING PAGE: read ?crop or localStorage → update #currentCrop
+   Append this near the end of script.js (after chart init functions if possible)
+   ------------------------- */
+window.addEventListener('load', () => {
+  try {
+    // prefer URL param (when user clicked Start Farming), fallback to localStorage
+    const params = new URLSearchParams(window.location.search);
+    const cropFromUrl = params.get('crop');
+    const cropFromStorage = localStorage.getItem('selectedCrop');
+    const chosen = (cropFromUrl && cropFromUrl.trim()) || (cropFromStorage && cropFromStorage.trim());
+
+    if (chosen) {
+      const currentCropEl = document.getElementById('currentCrop');
+      if (currentCropEl) {
+        currentCropEl.textContent = chosen;
+        // ✅ clear after use so form resets on next reload
+        localStorage.removeItem('selectedCrop');
+      }
+      // keep localStorage in sync
+      localStorage.setItem('selectedCrop', chosen);
+    }
+
+    // refresh charts that depend on currentCrop (if function exists)
+    if (typeof updateChartsForActiveCrop === 'function') {
+      updateChartsForActiveCrop();
+    }
+  } catch (err) {
+    // don't break the page if something goes wrong
+    console.warn('Crop restore error:', err);
+  }
+});
+
 
