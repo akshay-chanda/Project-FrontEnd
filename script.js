@@ -818,3 +818,61 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// SCRIPT FOR CROP PREFERENCES DROPDOWN
+    const cropListBtn = document.getElementById('cropListBtn');
+    const cropDropdown = document.getElementById('cropDropdown');
+    const selectedCropText = document.getElementById('selectedCropText');
+
+    cropListBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      cropDropdown.classList.toggle('open');
+    });
+
+    cropDropdown.addEventListener('click', function(event) {
+      event.preventDefault();
+      const selectedLink = event.target.closest('a');
+      if (selectedLink) {
+        const cropName = selectedLink.querySelector('span').textContent;
+        selectedCropText.textContent = `Selected: ${cropName}`;
+        cropDropdown.classList.remove('open');
+      }
+    });
+
+    window.addEventListener('click', function() {
+      if (cropDropdown.classList.contains('open')) {
+        cropDropdown.classList.remove('open');
+      }
+    });
+
+    // 🌱 Start Farming Button Control
+    const startFarmingBtn = document.getElementById("startFarmingBtn");
+    let selectedCrop = null;
+
+    cropDropdown.addEventListener("click", function (event) {
+      event.preventDefault();
+      const selectedLink = event.target.closest("a");
+      if (selectedLink) {
+        selectedCrop = selectedLink.querySelector("span").textContent;
+        selectedCropText.textContent = `Selected: ${selectedCrop}`;
+        cropDropdown.classList.remove("open");
+
+        // Enable Start Farming
+        startFarmingBtn.disabled = false;
+        startFarmingBtn.classList.remove("bg-green-400");
+        startFarmingBtn.classList.add("bg-green-600", "hover:bg-green-700");
+      }
+    });
+
+    if (startFarmingBtn) {
+      startFarmingBtn.addEventListener("click", (e) => {
+        if (!selectedCrop) {
+          e.preventDefault();
+          alert("⚠️ Please select a crop before starting farming!");
+        } else {
+          // Go to farming page
+          window.location.href = "farming.html?crop=" + encodeURIComponent(selectedCrop);
+        }
+      });
+    }
+

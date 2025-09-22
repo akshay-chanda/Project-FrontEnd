@@ -155,3 +155,13 @@ body { font-family: 'Inter', sans-serif; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   transform: scale(1.05);
 }
+
+/* Crop Dropdown Animation */
+#cropDropdown {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out;
+}
+#cropDropdown.open {
+  max-height: 300px;
+}
