@@ -588,20 +588,49 @@ if (resetBtn) {
 /* -------------------------
    YIELD CHART (Chart.js)
    ------------------------- */
-function initYieldChart() {
+
+  // Mock yield data (Tons/Hectare) for last 5 years + prediction
+  const yieldData = {
+    Wheat: [3.5, 3.8, 3.6, 3.9, 3.7, 4.2],
+    Rice:  [4.0, 4.2, 4.1, 4.3, 4.5, 4.8],
+    Maize: [2.8, 3.0, 2.9, 3.2, 3.1, 3.5],
+    Tomato:[20, 22, 21, 23, 24, 26],
+    Potato:[18, 19, 18.5, 19.5, 20, 21]
+  };
+
+let yieldChartInstance = null;
+
+function initYieldChart(cropName = "Wheat") {
   const canvas = document.getElementById('yieldChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  // Chart config
-  new Chart(ctx, {
+
+  const yields = yieldData[cropName] || yieldData["Wheat"];
+
+  // ✅ Update heading dynamically
+  const heading = document.getElementById("yieldChartHeading");
+  if (heading) heading.textContent = `Yield History (${cropName})`;
+
+  // Destroy old chart if exists
+  if (yieldChartInstance) yieldChartInstance.destroy();
+
+  yieldChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: ['2020', '2021', '2022', '2023', '2024', '2025 (Pred.)'],
       datasets: [{
-        label: 'Yield (Tons/Hectare)',
-        data: [3.5, 3.8, 3.6, 3.9, 3.7, 4.2],
-        backgroundColor: ['rgba(16,185,129,0.2)','rgba(16,185,129,0.2)','rgba(16,185,129,0.2)','rgba(16,185,129,0.2)','rgba(16,185,129,0.2)','rgba(59,130,246,0.4)'],
-        borderColor: ['rgba(16,185,129,1)','rgba(16,185,129,1)','rgba(16,185,129,1)','rgba(16,185,129,1)','rgba(16,185,129,1)','rgba(59,130,246,1)'],
+        label: `${cropName} Yield (Tons/Hectare)`,
+        data: yields,
+        backgroundColor: [
+          'rgba(16,185,129,0.2)','rgba(16,185,129,0.2)',
+          'rgba(16,185,129,0.2)','rgba(16,185,129,0.2)',
+          'rgba(16,185,129,0.2)','rgba(59,130,246,0.4)'
+        ],
+        borderColor: [
+          'rgba(16,185,129,1)','rgba(16,185,129,1)',
+          'rgba(16,185,129,1)','rgba(16,185,129,1)',
+          'rgba(16,185,129,1)','rgba(59,130,246,1)'
+        ],
         borderWidth: 1,
         borderRadius: 5
       }]
@@ -676,7 +705,8 @@ function initMarketChart(cropName = "Wheat") {
 // Detect current crop and refresh chart
 function updateChartsForActiveCrop() {
   const cropName = document.getElementById("currentCrop")?.textContent?.trim() || "Wheat";
-  initMarketChart(cropName);
+  initYieldChart(cropName);   // new!
+  initMarketChart(cropName);  // existing
 }
 
 /* -------------------------
