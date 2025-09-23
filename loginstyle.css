@@ -1,4 +1,6 @@
-/* Core styles matching Agri-Sight theme */
+/* =========================
+   Core Theme Variables
+========================= */
 :root {
   --card-radius: 0.75rem;
   --primary-color: #16a34a;   /* Tailwind green-600 */
@@ -8,6 +10,9 @@
   --border-color: #d1d5db;    /* Tailwind gray-300 */
 }
 
+/* =========================
+   Base Styles
+========================= */
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-color);
@@ -16,7 +21,9 @@ body {
   padding: 0;
 }
 
-/* Card container */
+/* =========================
+   Card
+========================= */
 .card {
   background-color: #ffffff;
   border-radius: var(--card-radius);
@@ -29,7 +36,9 @@ body {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
-/* Form elements */
+/* =========================
+   Form Elements
+========================= */
 input[type="email"],
 input[type="password"] {
   transition: border 0.2s ease, box-shadow 0.2s ease;
@@ -41,7 +50,9 @@ input[type="password"]:focus {
   box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
 }
 
-/* Buttons */
+/* =========================
+   Buttons
+========================= */
 button {
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
@@ -54,7 +65,9 @@ button:active {
   transform: scale(0.98);
 }
 
-/* Links */
+/* =========================
+   Links
+========================= */
 a {
   transition: color 0.2s ease;
 }
@@ -63,7 +76,9 @@ a:hover {
   color: var(--primary-hover);
 }
 
-/* Checkbox fix */
+/* =========================
+   Checkbox
+========================= */
 input[type="checkbox"] {
   accent-color: var(--primary-color);
 }
