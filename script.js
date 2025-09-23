@@ -993,5 +993,3 @@ if (goToPlannerBtn) {
     }
   });
 }
-
-
