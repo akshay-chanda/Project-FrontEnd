@@ -464,9 +464,93 @@ const cropRequirements = {
   Wheat: { moisture: [35, 60], ph: [6, 7.5], n: 40, p: 30, k: 20 },
   Rice: { moisture: [50, 80], ph: [5.5, 7], n: 50, p: 40, k: 30 },
   Maize: { moisture: [30, 60], ph: [5.5, 7.5], n: 45, p: 35, k: 25 },
-  Tomato: { moisture: [40, 70], ph: [6, 7], n: 35, p: 30, k: 20 },
-  Potato: { moisture: [50, 75], ph: [5, 6.5], n: 50, p: 40, k: 30 }
+  Sugarcane: { moisture: [60, 85], ph: [6, 7.5], n: 60, p: 50, k: 40 },
+  Cotton: { moisture: [40, 65], ph: [5.8, 7.2], n: 50, p: 40, k: 35 }
 };
+
+// ---- cropImages mapping (place this once, above the function) ----
+const cropImages = {
+  Wheat: "wheat.jpg",
+  Rice:  "rice.jpg",
+  Maize: "maize.jpg",
+  Sugarcane:"sugarcane.webp",
+  Cotton:"cotton.JPG"
+};
+
+// ---- robust populate function (drop this into script.js) ----
+function populateTopCropsDropdown() {
+  if (typeof cropRequirements !== 'object') {
+    console.error('populateTopCropsDropdown: cropRequirements not found.');
+    return;
+  }
+
+  // latest soil (fallback safe object)
+  const soil = window._LATEST_SOIL || { moisture: 40, ph: 6.5, nitrogen: 50, phosphorus: 40, potassium: 30 };
+
+  // score crops
+  const scored = Object.keys(cropRequirements).map(name => {
+    const req = cropRequirements[name];
+    let score = 0;
+
+    // moisture
+    if (soil.moisture >= req.moisture[0] && soil.moisture <= req.moisture[1]) score += 2;
+    else score += 1;
+
+    // pH
+    if (soil.ph >= req.ph[0] && soil.ph <= req.ph[1]) score += 2;
+    else score += 1;
+
+    // NPK checks (use numeric fallback)
+    const n = Number(soil.nitrogen ?? soil.n ?? 0);
+    const p = Number(soil.phosphorus ?? soil.p ?? 0);
+    const k = Number(soil.potassium ?? soil.k ?? 0);
+    if (n >= req.n) score += 1;
+    if (p >= req.p) score += 1;
+    if (k >= req.k) score += 1;
+
+    return { crop: name, score };
+  });
+
+  scored.sort((a,b) => b.score - a.score);
+  const top5 = scored.slice(0,5);
+
+  // find dropdown container with fallbacks
+  const dropdownContainer = document.getElementById('cropDropdownList')
+                         || document.querySelector('#cropDropdown .py-1')
+                         || document.getElementById('cropDropdown');
+
+  if (!dropdownContainer) {
+    console.error('populateTopCropsDropdown: Could not find #cropDropdownList or fallback selectors in index.html. Make sure you replaced static list with <div id="cropDropdownList"> inside #cropDropdown.');
+    return;
+  }
+
+  // render items (image + name + score)
+  dropdownContainer.innerHTML = top5.map(item => {
+    const img = (cropImages && cropImages[item.crop]) ? cropImages[item.crop] : 'default.jpg';
+    return `
+      <a href="#" class="flex items-center px-4 py-2 text-md text-gray-700 hover:bg-green-50" role="menuitem" data-crop="${item.crop}">
+        <img src="${img}" alt="${item.crop}" class="w-10 h-10 rounded-md mr-3 object-cover">
+        <span class="font-medium">${item.crop}</span>
+        <span class="ml-auto text-xs text-gray-400">Score: ${item.score}</span>
+      </a>
+    `;
+  }).join('');
+
+  // add click handlers to update the selected button text (with image) — optional but useful
+  dropdownContainer.querySelectorAll('a[data-crop]').forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const cropName = a.dataset.crop;
+      const selected = document.getElementById('selectedCropText');
+      if (selected) {
+        const img = cropImages[cropName] || 'default.jpg';
+        selected.innerHTML = `<img src="${img}" alt="${cropName}" class="inline-block w-6 h-6 rounded-sm mr-2 object-cover align-middle">${cropName}`;
+      }
+      // If you have dropdown open/close logic, close it here (adjust selectors as needed)
+      // Example: document.getElementById('cropDropdown').classList.remove('open');
+    });
+  });
+}
 
 // 1️⃣ AI Recommender (based on sensor data)
 // Replaced with farming plan for current crop
@@ -774,6 +858,8 @@ window.addEventListener('load', () => {
       console.warn("Location fetch failed:", err);
     });
   }
+
+  populateTopCropsDropdown();   // 🌱 Fill dropdown with top 5 crops
 });
 
 /* -------------------------
