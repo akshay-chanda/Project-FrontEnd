@@ -469,53 +469,29 @@ const cropRequirements = {
 };
 
 // 1️⃣ AI Recommender (based on sensor data)
+// Replaced with farming plan for current crop
 function aiCropRecommendations() {
   const cropSuggestions = document.getElementById("cropSuggestions");
   cropSuggestions.innerHTML = "";
 
-  // Sensor Data (from IoT / fallback)
-  const soil = {
-    moisture: window._LATEST_SOIL?.soilMoisture || 40,
-    ph: window._LATEST_SOIL?.ph || 6.5,
-    n: window._LATEST_SOIL?.n || 30,
-    p: window._LATEST_SOIL?.p || 25,
-    k: window._LATEST_SOIL?.k || 20,
-    temp: window._LATEST_SOIL?.soilTemp || 28
-  };
+  // Get current crop name from the dashboard
+  const currentCrop = document.getElementById("currentCrop")?.textContent?.trim() || "Wheat";
 
-  // Evaluate each crop
-  let suitableCrops = [];
-  for (let crop in cropRequirements) {
-    const req = cropRequirements[crop];
-    if (
-      soil.moisture >= req.moisture[0] &&
-      soil.moisture <= req.moisture[1] &&
-      soil.ph >= req.ph[0] &&
-      soil.ph <= req.ph[1]
-    ) {
-      suitableCrops.push(crop);
-    }
-  }
+  // Example simple farm plan (can be expanded)
+  const farmPlan = `
+    <div class="p-4 bg-green-100 rounded-xl shadow-md">
+      <h4 class="font-bold text-green-800">📋 Farming Plan for "${currentCrop}"</h4>
+      <ul class="list-disc list-inside mt-2 text-green-700 font-medium">
+        <li>🌱 Prepare soil according to sensor readings.</li>
+        <li>💧 Maintain proper irrigation (check soil moisture).</li>
+        <li>🧪 Apply NPK fertilizers as per soil requirement.</li>
+        <li>☀️ Monitor weather forecast for timely sowing/harvest.</li>
+        <li>📊 Track yield & market trends for ${currentCrop}.</li>
+      </ul>
+    </div>
+  `;
 
-  // Show results
-  if (suitableCrops.length > 0) {
-    cropSuggestions.innerHTML = `
-      <div class="p-4 bg-green-100 rounded-xl shadow-md">
-        <h4 class="font-bold text-green-800">🌱 Recommended Crops (AI)</h4>
-        <p class="mt-2">Based on your soil & sensor data, you can grow:</p>
-        <ul class="list-disc list-inside mt-2 text-green-700 font-medium">
-          ${suitableCrops.map(c => `<li>${c}</li>`).join("")}
-        </ul>
-      </div>
-    `;
-  } else {
-    cropSuggestions.innerHTML = `
-      <div class="p-4 bg-yellow-100 rounded-xl shadow-md">
-        <h4 class="font-bold text-yellow-800">⚠️ No perfect match found</h4>
-        <p class="mt-2">Your soil conditions don’t exactly match standard crops. Try improving soil first.</p>
-      </div>
-    `;
-  }
+  cropSuggestions.innerHTML = farmPlan;
 }
 
 // 2️⃣ Soil Amendments (user inputs their own crop)
